@@ -36,18 +36,38 @@ def check_email(user_email):
         return None
 
 
-def error_msg():
+def error_do(e, func_name):
     # 输出一个毫无用处的信息
     put_html("<hr>")
-    put_error("There was an error happened. Please try again!\nIf multiple attempts still fail, please click Feedback.")
+    put_error("There was an error happened.")
+    put_html('<h3>⚠️Detail</h3>')
+    put_table([
+        ['Function', 'Reason'],
+        ['reset_password_confirm', str(e)]])
     put_html("<hr>")
-
-
-def error_log(e):
+    put_markdown('Please try again!\nIf multiple attempts still fail, please click [Feedback](https://github.com/Evil0ctal/Calibear_User/issues).')
     # 将错误记录在logs.txt中
     date = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     with open('logs.txt', 'a') as f:
-        f.write(date + ": " + str(e) + '\n')
+        f.write(date + " " + func_name + ':' + str(e) + '\n')
+
+
+def time_rank(start, end):
+    total_time = float(format(end - start, '.4f'))
+    if total_time <= 10:
+        return str(total_time), 'You are the fastest one!!!'
+    elif 10 < total_time <= 20:
+        return str(total_time), 'Very fast, not bad!'
+    elif 20 < total_time <= 30:
+        return str(total_time), 'You are kind of slow :)'
+    elif 30 < total_time <= 40:
+        return str(total_time), 'You are slow :)'
+    elif 40 < total_time <= 50:
+        return str(total_time), 'You are too slow :)'
+    elif 50 < total_time <= 60:
+        return str(total_time), 'How can you took so long :)'
+    elif 60 < total_time:
+        return str(total_time), 'Tooooooooooo slow!!!'
 
 
 def registration(user_email):
@@ -73,8 +93,7 @@ def registration(user_email):
             put_info("An activation code had been sent to your Email.\nPlease input the activation code below to finish registration!")
             return user_id
     except Exception as e:
-        error_log(e)
-        error_msg()
+        error_do(e, 'registration')
 
 
 def activation(activation_code, user_id):
@@ -95,8 +114,7 @@ def activation(activation_code, user_id):
             # Response: {"token":"eyJ022iOiJKs1QiL123sGciOiJIUzI1NiJ9"}
             return True
     except Exception as e:
-        error_log(e)
-        error_msg()
+        error_do(e, 'activation')
 
 
 def reset_password(user_email):
@@ -120,9 +138,7 @@ def reset_password(user_email):
             put_info("If you did not receive the email, please check your spam.\nAfter successful confirmation, you will receive new password via Email.")
             return True
     except Exception as e:
-        error_log(e)
-        error_msg()
-        put_error('Reason:\n' + str(e))
+        error_do(e, 'reset_password')
 
 
 def reset_password_confirm(user_email, confirmation_code):
@@ -150,9 +166,7 @@ def reset_password_confirm(user_email, confirmation_code):
                 put_link('Back to home page', '/')
                 return 'limit'
     except Exception as e:
-        error_log(e)
-        error_msg()
-        put_error('Reason:\n' + str(e))
+        error_do(e, 'reset_password_confirm')
 
 
 def check_balance():
@@ -164,35 +178,35 @@ def check_balance():
         payload = {"login": info['username'], "password": info['password']}
         url = "https://calibear.bebooking.enes.tech/login/"
         response = requests.post(url, data=json.dumps(payload), headers=headers).text
-        json_response = json.loads(response)
-        token = json_response['token']
-        new_headers = {
-            "Content-Type": "application/json; charset=UTF-8",
-            "Referer": "https://calibear.booking.enes.tech/",
-            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36",
-            "authorization": 'token ' + token
-        }
-        result_url = "https://calibear.bebooking.enes.tech/current_user/"
-        r = requests.get(result_url, headers=new_headers).text
-        # {"id":3919,"first_name":null,"last_name":null,"amount":"0.00","login":"xlszgskzxicg@metalunits.com"}
-        account_info = json.loads(r)
-        user_name = account_info['login']
-        user_balance = account_info['amount']
-        print("检查余额response:\n" + r)
-        show_balance_result(user_name, user_balance)
+        print("登录回执: " + response)
+        # {"detail":"User with such login and password not found","code":-2}
+        if '-2' in response:
+            put_error("User with such login and password not found!\nPlease try again!")
+            put_link('Back to home page', '/')
+        else:
+            json_response = json.loads(response)
+            token = json_response['token']
+            new_headers = {
+                "Content-Type": "application/json; charset=UTF-8",
+                "Referer": "https://calibear.booking.enes.tech/",
+                "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36",
+                "authorization": 'token ' + token
+            }
+            url = "https://calibear.bebooking.enes.tech/current_user/"
+            response = requests.get(url, headers=new_headers).text
+            # {"id":3919,"first_name":null,"last_name":null,"amount":"0.00","login":"example@example.com"}
+            account_info = json.loads(response)
+            user_name = account_info['login']
+            user_balance = account_info['amount']
+            print("检查余额response:\n" + response)
+            put_success("Your account balance is below!")
+            put_table([
+                ['Type', 'Content'],
+                ['Username', user_name],
+                ['Balance', user_balance]])
+            put_link('Back to home page', '/')
     except Exception as e:
-        error_log(e)
-        error_msg()
-        put_error('Reason:\n' + str(e))
-
-
-def show_balance_result(user_name, user_balance):
-    put_success("Your account balance is below!")
-    put_table([
-        ['Type', 'Content'],
-        ['Username', user_name],
-        ['Balance', user_balance]])
-    put_link('Back to home page', '/')
+        error_do(e, 'check_balance')
 
 
 def about_popup_window():
@@ -250,7 +264,8 @@ def main():
                         end = time.time()
                         put_success('Registration Complete!')
                         put_info('An email with the initial password has been sent to your email.\nIf you don’t see it, please try to refresh your email or check your spam.')
-                        put_text('Total Time: %.4fs' % (end - start))
+                        total_time, rank = time_rank(start, end)
+                        put_text('Total Time: ' + str(total_time) + 's\n' + 'Grade: ' + rank)
                         put_link('Back to home page', '/')
     elif select_options == 'Reset password (Forgotten password)':
         # 开始时间
@@ -269,14 +284,16 @@ def main():
                             end = time.time()
                             put_success("Password Reset Complete!")
                             put_info("A new password had been sent to your email. \nIf you don’t see it, please try to refresh your email or check your spam.")
-                            put_text('Total Time: %.4fs' % (end - start))
+                            total_time, rank = time_rank(start, end)
+                            put_text('Total Time: ' + str(total_time) + 's\n' + 'Grade: ' + rank)
                             put_link('Back to home page', '/')
                         elif result == 'limit':
                             confirmation_status = True
                             clear()
                             end = time.time()
                             put_error('Exceeded the limit of attempts to enter confirmation code!')
-                            put_text('Total Time: %.4fs' % (end - start))
+                            total_time, rank = time_rank(start, end)
+                            put_text('Total Time: ' + str(total_time) + 's\n' + 'Grade: ' + rank)
                             put_link('Back to home page', '/')
     elif select_options == 'Check your balance':
         check_balance()
