@@ -2,7 +2,8 @@
 # @Author  : Evil0ctal
 # @Time    : 2021/11/20
 # @Function:
-# 获取网页用户输入参数后在后端向(enes.tech)服务器提交请求完成注册账户，重置密码，检查余额，无需使用API key。
+# After obtaining the parameters entered by the guests at the front desk, verify it, and submit a POST request to the Senet server to complete the account registration, reset the password, and print the result to the console without an API key.
+# 获取前台客人输入的参数后进行校验，无误后向Senet服务器提交POST请求完成注册账户，重置密码，无需API key。
 
 
 from pywebio import config, session
@@ -18,7 +19,7 @@ import re
 
 app = Flask(__name__)
 title = "Calibear Cyber Cafe"
-description = "Calibear Cyber Cafe Registration/Reset password/Check Balance."
+description = "Calibear Cyber Cafe Registration/Reset password。"
 headers = {
     "Content-Type": "application/json; charset=UTF-8",
     "Referer": "https://calibear.booking.enes.tech/",
@@ -42,7 +43,7 @@ def error_do(e, func_name):
     put_html('<h3>⚠️Detail</h3>')
     put_table([
         ['Function', 'Reason'],
-        [func_name, str(e)]])
+        ['reset_password_confirm', str(e)]])
     put_html("<hr>")
     put_markdown('Please try again!\nIf multiple attempts still fail, please click [Feedback](https://github.com/Evil0ctal/Calibear_User/issues).')
     # 将错误记录在logs.txt中
@@ -237,7 +238,7 @@ def main():
     put_markdown("""<div align='center' ><font size='10'>🐻Calibear User Management</font></div>""")
     put_html('<hr>')
     put_row([put_link("Home", '/'),
-             put_link("Booking", 'https://calibear.booking.enes.tech', new_window=True),
+             put_link("Booking", 'https://calibear.booking.enes.tech/office/1', new_window=True),
              put_link("WebStore", 'https://calibearcybercafe.applova.menu/', new_window=True),
              put_button("About", onclick=lambda: about_popup_window(), link_style=True, small=True),
              put_markdown("![Views](https://views.whatilearened.today/views/github/evil0ctal/Calibear_User.svg)")
@@ -246,7 +247,7 @@ def main():
     email_placeholder = 'example@example.com'
     code_placeholder = 'Number only eg.123456'
     # 要求用户输入选择
-    select_options = select('Please select an options to continue', required=True, options=['Registration (New user)', 'Reset password (Forgotten password)', 'Check your balance'])
+    select_options = select('Please select an option to continue', required=True, options=['Registration (New user)', 'Reset password (Forgotten password)', 'Check balance'])
     if select_options == 'Registration (New user)':
         # 开始时间
         start = time.time()
