@@ -2,8 +2,7 @@
 # @Author  : Evil0ctal
 # @Time    : 2021/11/20
 # @Function:
-# After obtaining the parameters entered by the guests at the front desk, verify it, and submit a POST request to the Senet server to complete the account registration, reset the password, and print the result to the console without an API key.
-# 获取前台客人输入的参数后进行校验，无误后向Senet服务器提交POST请求完成注册账户，重置密码，无需API key。
+# 获取网页用户输入参数后在后端向(enes.tech)服务器提交请求完成注册账户，重置密码，检查余额，无需使用API key。
 
 
 from pywebio import config, session
@@ -19,7 +18,7 @@ import re
 
 app = Flask(__name__)
 title = "Calibear Cyber Cafe"
-description = "Calibear Cyber Cafe Registration/Reset password。"
+description = "Calibear Cyber Cafe Registration/Reset password/Check Balance."
 headers = {
     "Content-Type": "application/json; charset=UTF-8",
     "Referer": "https://calibear.booking.enes.tech/",
@@ -43,7 +42,7 @@ def error_do(e, func_name):
     put_html('<h3>⚠️Detail</h3>')
     put_table([
         ['Function', 'Reason'],
-        ['reset_password_confirm', str(e)]])
+        [func_name, str(e)]])
     put_html("<hr>")
     put_markdown('Please try again!\nIf multiple attempts still fail, please click [Feedback](https://github.com/Evil0ctal/Calibear_User/issues).')
     # 将错误记录在logs.txt中
