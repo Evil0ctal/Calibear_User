@@ -53,11 +53,11 @@ def error_do(e, func_name):
 
 def time_rank(start, end):
     total_time = float(format(end - start, '.4f'))
-    if total_time <= 10:
+    if total_time <= 15:
         return str(total_time), 'You are the fastest one!!!'
-    elif 10 < total_time <= 20:
+    elif 15 < total_time <= 25:
         return str(total_time), 'Very fast, not bad!'
-    elif 20 < total_time <= 30:
+    elif 25 < total_time <= 30:
         return str(total_time), 'You are kind of slow :)'
     elif 30 < total_time <= 40:
         return str(total_time), 'You are slow :)'
@@ -88,14 +88,14 @@ def registration(user_email):
             # Response: {"id":3148,"login":"example@example.com"}
             user_id = str(result['id'])
             clear()
-            put_success("The Email you input is:\n" + result['login'])
-            put_info("An activation code had been sent to your Email.\nPlease input the activation code below to finish registration!")
-            return user_id
+            put_success("The Email you Entered is:\n" + result['login'])
+            put_info("An activation code had been sent to: " + str(user_email) + "\nIf you don't see the email displayed, please check your spam!\nPlease Enter the activation code below to finish registration!")
+            return user_id, user_email
     except Exception as e:
         error_do(e, 'registration')
 
 
-def activation(activation_code, user_id):
+def activation(activation_code, user_id, user_email):
     # 提交激活POST请求
     try:
         payload = {"activation_code": str(activation_code)}
@@ -106,7 +106,8 @@ def activation(activation_code, user_id):
             # 请求失败参考（验证码错误）
             # Response: {"detail":"Invalid user validation code","code":1216}
             clear()
-            put_error("Invalid user validation code!\nplease enter the correct code!")
+            put_error("Invalid user activation code!")
+            put_info("Please enter the correct code!\nThe activation code will send to: " + str(user_email) + "\nIf you don't see the email displayed, please check your spam!")
             return False
         else:
             # 请求成功参考（验证码正确）
@@ -244,20 +245,20 @@ def main():
              ])
     # 核心代码 估值两亿 :)
     email_placeholder = 'example@example.com'
-    code_placeholder = 'Number only eg.123456'
+    code_placeholder = 'E.g.123456 (Not seeing code? Check your spam email.)'
     # 要求用户输入选择
     select_options = select('Please select an option to continue', required=True, options=['Registration (New user)', 'Reset password (Forgotten password)', 'Check balance'])
     if select_options == 'Registration (New user)':
         # 开始时间
         start = time.time()
-        user_email = input('Input your email', type=TEXT, validate=check_email, placeholder=email_placeholder)
+        user_email = input('Enter your email address below', type=TEXT, validate=check_email, placeholder=email_placeholder)
         if user_email:
-            user_id = registration(user_email)
+            user_id, user_email = registration(user_email)
             if user_id:
                 activation_status = False
                 while not activation_status:
-                    activation_code = input('Input your activation code', type=NUMBER, placeholder=code_placeholder)
-                    if activation(activation_code, user_id):
+                    activation_code = input('Enter activation code - sent to your email', type=NUMBER, placeholder=code_placeholder)
+                    if activation(activation_code, user_id, user_email):
                         activation_status = True
                         clear()
                         end = time.time()
@@ -269,12 +270,12 @@ def main():
     elif select_options == 'Reset password (Forgotten password)':
         # 开始时间
         start = time.time()
-        user_email = input('Input your email', type=TEXT, validate=check_email, placeholder=email_placeholder)
+        user_email = input('Enter your email address below', type=TEXT, validate=check_email, placeholder=email_placeholder)
         if user_email:
             if reset_password(user_email):
                 confirmation_status = False
                 while not confirmation_status:
-                    confirmation_code = input('Input your confirmation code', type=NUMBER, placeholder=code_placeholder)
+                    confirmation_code = input('Enter your confirmation code', type=NUMBER, placeholder=code_placeholder)
                     if confirmation_code:
                         result = reset_password_confirm(user_email, confirmation_code)
                         if result == 'success':
