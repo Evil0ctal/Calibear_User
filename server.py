@@ -295,7 +295,7 @@ def main():
                             total_time, rank = time_rank(start, end)
                             put_text('Total Time: ' + str(total_time) + 's\n' + 'Grade: ' + rank)
                             put_link('Back to home page', '/')
-    elif select_options == 'Check your balance':
+    elif select_options == 'Check balance':
         check_balance()
 
 
